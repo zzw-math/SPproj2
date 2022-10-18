@@ -10,37 +10,51 @@
 
 
 ## step 1
+##
+
+Escape <- function(n, k, strategy, box2card){
+  result = F
+  if (strategy!=3){
+    if (strategy==1) box <- k else box <- sample(1:(2*n),1)
+    for (j in 1:n) {
+      card <- box2card[box]
+      if (k==card){
+        result <- T
+        break
+      }
+      box <- card
+    }
+  } else{
+    boxes <- sample(1:(2*n),n)
+    cards <- box2card[boxes]
+    if (k%in%cards){
+      result <- T
+    }
+  }
+  return(result)
+}
+
+
 Pone <- function (n, k, strategy, nreps=10000){
+  ## input
+  ## output
   result <- rep(F, nreps)
   for (i in 1:nreps){
     box2card <- sample(1:(2*n),2*n)
-    if (strategy!=3){
-      if (strategy==1) box <- k else box <- sample(1:(2*n),1)
-      for (j in 1:n) {
-        card <- box2card[box]
-        if (k==card){
-          result[i] <- T
-          break
-        }
-        box <- card
-      }
-    } else{
-      boxes <- sample(1:(2*n),n)
-      cards <- box2card[boxes]
-      if (k%in%cards){
-        result[i] <- T
-      }
-    }
+    result[i] <- Escape(n, k, strategy, box2card)
   }
   prob <- sum(result)/nreps
-  return(list(result=result,prob=prob))
+  return(prob)
 }
 
 
 ## step 2
 Pall <- function (n, strategy, nreps=10000){
   M <- array(NA,c(nreps,2*n))
-  for (k in 1:(2*n)) M[,k] <- Pone(n,k,strategy,nreps)$result
+  for (i in 1:nreps){
+    box2card <- sample(1:(2*n),2*n)
+    for (k in 1:(2*n)) M[i,k] <- Escape(n, k, strategy, box2card)
+  }
   num_of_release <- apply(M, 1, sum)
   result <- num_of_release==2*n
   prob <- sum(result)/nreps
@@ -53,7 +67,7 @@ n <- 5
 for (strategy in 1:3){
   individual_prob <- rep(NA,2*n)
   for (k in 1:(2*n)){
-    individual_prob[k] <- Pone(n, k, strategy)$prob
+    individual_prob[k] <- Pone(n, k, strategy)
   }
   joint_prob <- Pall(n, strategy)
   cat('when using strategy',strategy, ',\nthe individual prob is:\n')
