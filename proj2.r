@@ -13,50 +13,53 @@
 ###############################################################################
 ## Practice 2
 ## Overview
-## We have 2n prisoners in a room, 2n cards shuffled in 2n boxes separately.
+## We have 2n prisoners in a room, 2n cards shuffled into 2n boxes separately.
 ## Prisoners, cards, boxes are labeled with integer 1~2n.
-## One can escape if he has found the card with the same integer as himself when
-## he finishes to open n boxes.
+## One can escape if one has found the card with the same number with one itself
+## after opening n boxes.
 
-## We list 3 strategies and wish to find out which strategy has the highest 
-## probability for a certain prisoner to escape and for all prisoners to escape.
+## We list out 3 strategies and wish to find out the one has the highest 
+## probability for the certain and all prisoners to escape.
 ## strategy 1: Prisoner k start from box k, get card k1 from it, open box k1, 
 ##             and repeat the process until get card k.
-## strategy 2: As strategy 1, but starting from a randomly selected box.
-## strategy 3: Open n boxes at random, checking each card for their number.
+## strategy 2: As strategy 1, but starting with a randomly selected box.
+## strategy 3: Opening n boxes at random, checking each card for their number.
 
 ## There are 3 functions to calculate the individual and joint probability:
-##     Escape: For given a shuffling of cards to boxes and prisoner's number, 
-##             simulate if the prisoner escape successfully.
+##     Escape: Give a shuffled card to each boxes and prisoner's number, 
+##             simulate whether the prisoner successfully escape or not.
 ##     Pone:   Run the 'Escape' function for nreps times, store the result and
 ##             calculate the escape probability for the prisoner k. 
 ##     Pall:   Simulate nreps times, for each simulation, we fix a random shuffling 
 ##             of cards to boxes, and Run 'Escape' function for every prisoner.
 ##             Then we judge in each simulation if all prisoners escape successfully 
-##             and calculate the probability.
+##             and calculate the joint probability.
 
 ## In the end, we define the loop length, for a fixed k, we start from box k, 
 ## get card k1 in it, then open box k1, ..., the loop length is the quantity of 
 ## boxes we opened before get card k. We want to calculate the probability of 
 ## each loop length occurs.
-## We write fuction 'loop_occure' to record if each loop taking place 
-## We also plot a bar chart of the probability of each loop length occurred,
-## when n=50.
+
+## We write fuction 'loop_occure' to record if each loop taking place. And write
+## function 'dloop' to simulate for nreps times to calculate the probability of
+## each loop length.
+## the function 'loop_no_longer_than_n' simulate for nreps times to calculate the
+## probability that there is not a loop longer than n in an experiments.
+## We plot a bar chart of the probability of each loop length occurred, when n=50.
 
 ################################################################
 
 Escape <- function(n, k, strategy, box2card){
   ## summary
   ##     For given boxes with cards and prisoner's number, 
-  ##     simulate the result if the prisoner escape successfully.
+  ##     simulate the result if the prisoner successfully escape.
   ## input
   ##     n: integer. half of the number of prisoners.
   ##     k: integer. prisoner's number.
-  ##     strategy: integer(1, 2, or 3). we have 3 strategies how prisoner decides 
-  ##               which box to open.
-  ##     box2card: vector of integer. a vector to store a random shuffling of 
+  ##     strategy: integer(1, 2, or 3). Strategies(1, 2, 3) are listed above.
+  ##     box2card: vector of integer. A vector stores a random shuffling of 
   ##               cards to boxes.
-  ##               eg. c(2, 3, 1, 4) means card 2 in box 1, card 3 in box 2, 
+  ##               e.g. c(2, 3, 1, 4) means card 2 in box 1, card 3 in box 2, 
   ##               card 1 in box 3, and card 4 in box 4
   ## output
   ##     result: bool. whether the prisoner escape successfully
@@ -80,8 +83,8 @@ Escape <- function(n, k, strategy, box2card){
     }
   } else{
     ## in strategy 3, we just open n different boxes and get the cards.
-    ## judge if k in these cards, if so, set result be true, which means the 
-    ## prisoner escape successfully.
+    ## determine whether k is in these cards, if it is, set result be true,   
+    ## which means the prisoner escape successfully.
     boxes <- sample(1:(2*n), n)
     cards <- box2card[boxes]
     if (k%in%cards){
@@ -99,8 +102,7 @@ Pone <- function (n, k, strategy, nreps=10000){
   ## input
   ##     n: integer. half of the number of prisoners.
   ##     k: integer. prisoner's number.
-  ##     strategy: integer(1, 2, or 3). we have 3 strategies how prisoner 
-  ##               decides which box to open.
+  ##     strategy: integer(1, 2, or 3). 
   ##     nreps: integer(default to 10000). the number of simulation times.
   ## output
   ##     prob: float. For given 'n', the probability of prisoner k to escape 
@@ -109,7 +111,7 @@ Pone <- function (n, k, strategy, nreps=10000){
   for (i in 1:nreps){
     ## Simulate nreps times, in each simulation, we fix a random shuffling of 
     ## cards to boxes, and simulate if prisoner k escape successfully.
-    ## Store the result in the nreps length vector 'result'.
+    ## Store the result in the nreps length of vector 'result'.
     box2card <- sample(1:(2*n), 2*n)
     result[i] <- Escape(n, k, strategy, box2card)
   }
@@ -122,15 +124,14 @@ Pall <- function (n, strategy, nreps=10000){
   ## summary
   ##    Simulate nreps times, in each simulation, we fix a random shuffling of
   ##    cards to boxes, and run 'Escape' function for every prisoner.
-  ##    Then we judge in each simulation if all prisoners escape successfully 
-  ##    and calculate the probability.
+  ##    Then we determine in each simulation if all prisoners escape successfully 
+  ##    and calculate the joint probability.
   ## input
   ##     n: integer. half of the number of prisoners.
-  ##     strategy: integer(1, 2, or 3). we have 3 strategies how prisoner 
-  ##               decides which box to open
+  ##     strategy: integer(1, 2, or 3).
   ##     nreps: integer(default to 10000). the number of simulation times.
   ## output
-  ##     prob: float. For given 'n', the probability of prisoner k to escape
+  ##     prob: float. For given 'n', the probability of all prisoners to escape
   ##           successfully. 
   M <- array(NA,c(nreps, 2*n))   ## every row stores the result if each prisoner 
                                  ## escape successfully, and we have nreps rows 
@@ -143,7 +144,7 @@ Pall <- function (n, strategy, nreps=10000){
     for (k in 1:(2*n)) M[i,k] <- Escape(n, k, strategy, box2card)
   }
   ## count the prisoners who escape successfully in each experiments.
-  ## judge whether the count is 2n and calculate the probability.
+  ## determine whether the count is 2n and calculate the joint probability.
   num_of_release <- apply(M, 1, sum)
   result <- num_of_release==2*n
   prob <- sum(result)/nreps
@@ -152,18 +153,17 @@ Pall <- function (n, strategy, nreps=10000){
 
 
 ## fix n=5 or 50, held the experiments for each strategy, calculate the individual 
-## probability for certain prisoners to escape successfully,
-## and the joint probability for all prisoners to escape successfully.
+## probability for the certain and all prisoners to successfully escape.
 for (n in c(5, 50)){
-  cat('when n =', n)
+  cat('when n =', n, '\n')
   for (strategy in 1:3){
     individual_prob <- rep(NA,2*n)    ## store the probability for a certain 
-    ## prisoner to escape successfully.
+                                      ## prisoner to escape successfully.
     for (k in 1:(2*n)){
       individual_prob[k] <- Pone(n, k, strategy)
     }
     joint_prob <- Pall(n, strategy)   ## store the probability for all prisoners 
-    ## to escape successfully.
+                                      ## to escape successfully.
     cat('In strategy', strategy, ',\nthe individual prob is:\n')
     cat(individual_prob,'\n')
     cat('the joint prob is:\n')
@@ -174,20 +174,23 @@ for (n in c(5, 50)){
 
 ## Some Conclusions
 ## 1. The individual probabilities for each prisoner to escape successfully 
-##    under strategy 2 is less than that of the others two.
+##    under strategy 2 is much lesser in comparison with other two.
 ## In strategy 1 and 3, prisoner k will never back to an opened box until they 
 ## get card k. Thus they don't waste their chance to open n different boxes. So 
-## the probability is 0.5.
+## the probability is around 0.5.
 ## In strategy 2, prisoner start from box k0 might get card k0 in the procedure, 
-## which will lead to a loop and waste their chance. So the probability is less 
-## than 0.5.
+## which will lead to a repeating loop and waste their chance. 
+## e.g. if there are 4 boxes K0, K1, K2, K3 contain 4 cards k1, k2, k3, k0 respectively
+## when we start from box K0, the route will be k0 -> k1 -> k2 -> k3 -> k0.  
+## So, the prisoner wastes all the chances in this meaningless loop.
+## So the probability is less than 0.5.
 
 ## 2. The joint probability for all prisoners to escape successfully under 
 ##    strategy 1 is much bigger than that of the other two.
 ## It's obviously that in strategy 2 and 3, the events of each prisoner free are
 ## independent. So the joint probability is the product of the individual 
 ## probabilities, which lead to a very small probability.
-## However, in strategy 1, the event of all prisoner free is up to all the loop 
+## However, in strategy 1, the event of all prisoners free depend on all the loop 
 ## length no bigger than n, which has a significant probability.
 
 
@@ -195,7 +198,10 @@ loop_occure <- function(n) {
   ## summary 
   ##    For a given n, record if each loop length from 1 to 2n occurred.
   ## input
+  ##       n: integer. half of the number of prisoners.
   ## output
+  ##     result: vector(bool). in one experiment, if each loop length from 1 to  
+  ##             2n occurred.
   result <- rep(F, 2*n)
   box2card <- sample(1:(2*n), 2*n)
   ## fix a random shuffling of cards to boxes first, then set loop length=1 
@@ -244,11 +250,23 @@ dloop <- function (n, nreps=10000){
 
 
 loop_no_longer_than_n <- function(n, nreps=10000){
-  count <- 0    ## to store the
+  ## summary 
+  ##    for given n, calculate the probability that there is not loop longer 
+  ##    than n.
+  ## input
+  ##    n: integer. half of the number of boxes(cards)
+  ##    nreps: integer(default to 10000). the number of simulation times.
+  ## output
+  ##    prob: float. For given 'n', the probability that there is not loop 
+  ##          longer than n
+  count <- 0    ## to store the quantity of loops that are no longer than n
   for (i in 1:nreps){
+    ## simulate nreps times of experiments, in each experiment, if there does  
+    ## not exist the loops longer than 50, add one to 'count'.
     result <- loop_occure(n)
     if(sum(result[51:(2*n)])==0) count <- count + 1
   }
+  ## divide count with nreps to calculate the probability.
   prob <- count/nreps
   return(prob)
 }
@@ -260,8 +278,8 @@ n <- 50
 prob <- dloop(n)
 barplot(prob, names.arg=1:(2*n), xlab='loop length', ylab='probability of occuring')
 no_loop_longer_than_50 <- loop_no_longer_than_n(50)
-cat('when n = 50, the probability that there is no loop longer than 50 is ')
-cat(no_loop_longer_than_50)
+cat('when n = 50, the probability that there is no loop longer than 50 is', 
+    no_loop_longer_than_50)
 
 
 
