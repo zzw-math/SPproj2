@@ -39,10 +39,7 @@
 ## get card k1 in it, then open box k1, ..., the loop length is the quantity of 
 ## boxes we opened before get card k. We want to calculate the probability of 
 ## each loop length occurs.
-## The function 'dloop' are there to solve this:
-##    dloop:  Simulate nreps times, in each simulation, we record if
-##            loop length = k occurred. Then we count the times loop length = k 
-##            occurred in nreps simulations, and calculate the probability.
+## We write fuction 'loop_occure' to record if each loop taking place 
 ## We also plot a bar chart of the probability of each loop length occurred,
 ## when n=50.
 
@@ -154,22 +151,24 @@ Pall <- function (n, strategy, nreps=10000){
 }
 
 
-## fix n=5, held the experiments for each strategy, calculate the individual 
+## fix n=5 or 50, held the experiments for each strategy, calculate the individual 
 ## probability for certain prisoners to escape successfully,
 ## and the joint probability for all prisoners to escape successfully.
-n <- 5
-for (strategy in 1:3){
-  individual_prob <- rep(NA,2*n)    ## store the probability for a certain 
-                                    ## prisoner to escape successfully.
-  for (k in 1:(2*n)){
-    individual_prob[k] <- Pone(n, k, strategy)
+for (n in c(5, 50)){
+  cat('when n =', n)
+  for (strategy in 1:3){
+    individual_prob <- rep(NA,2*n)    ## store the probability for a certain 
+    ## prisoner to escape successfully.
+    for (k in 1:(2*n)){
+      individual_prob[k] <- Pone(n, k, strategy)
+    }
+    joint_prob <- Pall(n, strategy)   ## store the probability for all prisoners 
+    ## to escape successfully.
+    cat('In strategy', strategy, ',\nthe individual prob is:\n')
+    cat(individual_prob,'\n')
+    cat('the joint prob is:\n')
+    cat(joint_prob,'\n')
   }
-  joint_prob <- Pall(n, strategy)   ## store the probability for all prisoners 
-                                    ## to escape successfully.
-  cat('when using strategy', strategy, ',\nthe individual prob is:\n')
-  cat(individual_prob,'\n')
-  cat('the joint prob is:\n')
-  cat(joint_prob,'\n')
 }
 
 
@@ -192,6 +191,36 @@ for (strategy in 1:3){
 ## length no bigger than n, which has a significant probability.
 
 
+loop_occure <- function(n) {
+  ## summary 
+  ##    For a given n, record if each loop length from 1 to 2n occurred.
+  ## input
+  ## output
+  result <- rep(F, 2*n)
+  box2card <- sample(1:(2*n), 2*n)
+  ## fix a random shuffling of cards to boxes first, then set loop length=1 
+  ## and start from box k, if we get card k in box k, just return the loop 
+  ## length and break the 'for loop', if not, plus loop length with 1, set
+  ## 'box'='card', and open box 'box' in the next loop, until we get card k.
+  ## It's obviously that we will definitely get card k after we open all the 
+  ## boxes, which is, opening boxes for 2n times. So, we simply use 'for loop',
+  ## and, we can also use 'while loop' begin with 'while True'.
+  for (k in 1:(2*n)){
+    loop_length <- 1
+    box <- k
+    for (j in 1:(2*n)){
+      card <- box2card[box]
+      if (card==k){
+        result[loop_length] <- T
+        break
+      }
+      box <- card
+      loop_length <- loop_length + 1
+    }
+  }
+  return(result)
+}
+
 dloop <- function (n, nreps=10000){
   ## summary
   ##     simulate nreps times, in each simulation, for loop length from 1 to 2n,
@@ -207,33 +236,20 @@ dloop <- function (n, nreps=10000){
                                         ## loop length occurred, and we have 
                                         ## nreps rows to store each experiment.
   for (i in 1:nreps){
-    ## fix a random shuffling of cards to boxes first, then set loop length=1 
-    ## and start from box k, if we get card k in box k, just return the loop 
-    ## length and break the for loop, if not, plus loop length with 1, set
-    ## 'box'='card', and open box 'box' in the next loop, until we get card k.
-    ## It's obviously that we will definitely get card k after we open all the 
-    ## boxes, which is, opening boxes for 2n times. So, we simply use 'for loop',
-    ## and, we can also use 'while loop' begin with 'while True'.
-    box2card <- sample(1:(2*n), 2*n)
-    for (k in 1:(2*n)){
-      loop_length <- 1
-      box <- k
-      for (j in 1:(2*n)){
-        card <- box2card[box]
-        if (card==k){
-          result[i,loop_length] <- T
-          break
-        }
-        box <- card
-        loop_length <- loop_length + 1
-      }
-    }
+    result[i,] <- loop_occure(n) 
   }
-  ## To obtain the probability for each loop length occurred,
-  ## sum up the bool value by columns to get the frequency of each loop length 
-  ## taking place in nreps simulations.
-  ## Then divide the frequency with nreps to get the probability.
   prob <- apply(result, 2, sum)/nreps
+  return(prob)
+}
+
+
+loop_no_longer_than_n <- function(n, nreps=10000){
+  count <- 0    ## to store the
+  for (i in 1:nreps){
+    result <- loop_occure(n)
+    if(sum(result[51:(2*n)])==0) count <- count + 1
+  }
+  prob <- count/nreps
   return(prob)
 }
 
@@ -243,8 +259,9 @@ dloop <- function (n, nreps=10000){
 n <- 50
 prob <- dloop(n)
 barplot(prob, names.arg=1:(2*n), xlab='loop length', ylab='probability of occuring')
-
-
+no_loop_longer_than_50 <- loop_no_longer_than_n(50)
+cat('when n = 50, the probability that there is no loop longer than 50 is ')
+cat(no_loop_longer_than_50)
 
 
 
