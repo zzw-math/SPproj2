@@ -13,13 +13,14 @@
 Escape <- function(n, k, s, ranbox){
   result = FALSE
   if(s==1){
-    box <- k 
+    box <- k
     for (j in 1:n){
       card <- ranbox[box]
       if(k==card){
         result <- TRUE
         break
       }
+      box <- card
     }
   }
 ## For Strategy 2, the prisoner with number k randomly choose a box, if the card 
@@ -32,6 +33,7 @@ Escape <- function(n, k, s, ranbox){
         result <- TRUE
         break
       }
+      box <- card
     }
   }
   ## For Strategy 3, the prisoner with number k choose n box at one time, 
@@ -67,7 +69,7 @@ Pall <- function(n, s, nreps){
   for (i in 1:nreps){
     ranbox <- sample(1:(2*n), 2*n, replace=FALSE)
     for (k in 1:(2*n)){
-      M[i,k] <- Escape(n, k, s, ranbox, ranbox)
+      M[i,k] <- Escape(n, k, s, ranbox)
     }
   }
   release <- apply(M,1,sum)
@@ -82,7 +84,7 @@ for (s in 1:3){
   for (k in 1:(2*n)){
     inidprob[k] <- Pone(n, k, s)
   }
-  jointprob <- Pone(n, k, s)
+  jointprob <- Pall(n, s)
   cat(inidprob, '\n')
   cat(jointprob, '\n')
 }
@@ -93,19 +95,15 @@ for (s in 1:3){
   for (k in 1:(2*n)){
     inidprob2[k] <- Pone(n, k, s)
   }
-  jointprob2 <- Pone(n, k, s)
+  jointprob2 <- Pall(n, s)
   cat(inidprob2, '\n')
   cat(jointprob2, '\n')
 }
 
-##Q4: For strategy 1&2, they have the similar individual probability.
-##In Strategy 1, we have (2*n)! permutation. If there exists a permutation within 
-##length n, the prisoner will be released.
-##In Strategy 2, the prison may choose the same box more than once, so the joint 
-##probability is the lowest.
-##In Strategy 3, we obtained the highest individual and 
-##probability, however,
-##For Strategy 3, the individual probability is no longer randomly independent,
-##individual probability is around o.5. In this case the the joint probability 
-##will be larger. And with the increase of n, the joint probability approaches 0.5.
-##Overall, Strategy 3 is the optimal one.
+##Q4: 
+##In Strategy 1, we have (2*n)! permutation. If there exists a permutation 
+##within length n, the prisoner will be released. In Strategy 2, the prison may 
+##choose the same box more than once. Then the cycle permutation occurs, 
+##resulting to a lower joint probability. For Strategy 3, the individual 
+##probability approaches to 0.5.In this case the the joint probability equals 
+##to (0.5)^n, which will be the lowest.Overall, Strategy 1 is the optimal one.
