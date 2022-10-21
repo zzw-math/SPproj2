@@ -8,9 +8,14 @@
 ## contribution
 ## Ziwen Zhong | Wenzheng Zhang | Tianqi Dai
 ##     40%     |       30%      |    30%
+## Ziwen write most of the code first, Tianqi add some comments, Wenzheng 
+## reconstruct 'dloop' function and add the 'loop_no_longer_than_n' function.
+## In the group meeting, we found in function 'Pall', prisoners don't start with 
+## a fix random of cards to boxes, Tianqi added 'Escape' function and 
+## reconstructed 'Pall' to solve this problem.
 
 
-###############################################################################
+################################################################################
 ## Practice 2
 ## Overview
 ## We have 2n prisoners in a room, 2n cards shuffled into 2n boxes separately.
@@ -49,7 +54,7 @@
 ## We plot a bar chart of the probability of each loop length occurred, when
 ## n=50.
 
-################################################################
+################################################################################
 
 Escape <- function(n, k, strategy, box2card){
   ## summary
