@@ -26,33 +26,35 @@
 ## strategy 3: Opening n boxes at random, checking each card for their number.
 
 ## There are 3 functions to calculate the individual and joint probability:
-##     Escape: Give a shuffled card to each boxes and prisoner's number, 
-##             simulate whether the prisoner successfully escape or not.
-##     Pone:   Run the 'Escape' function for nreps times, store the result and
-##             calculate the escape probability for the prisoner k. 
-##     Pall:   Simulate nreps times, for each simulation, we fix a random shuffling 
-##             of cards to boxes, and Run 'Escape' function for every prisoner.
-##             Then we judge in each simulation if all prisoners escape successfully 
-##             and calculate the joint probability.
+##     Escape: For given n, strategy, prisoner's number, and a shuffling cards  
+##             to boxes, simulate the result if the prisoner successfully escape.
+##     Pone:   For given n, prisoner's number, and strategy. Run the 'Escape' 
+##             function for nreps times, store the result and calculate the 
+##             escape probability for the prisoner k.  
+##     Pall:   For given n and strategy, run the 'Escape' for nreps times, store
+##             the result and calculate the probability for all prisoners to 
+##             escape.
 
 ## In the end, we define the loop length, for a fixed k, we start from box k, 
 ## get card k1 in it, then open box k1, ..., the loop length is the quantity of 
 ## boxes we opened before get card k. We want to calculate the probability of 
 ## each loop length occurs.
 
-## We write fuction 'loop_occure' to record if each loop taking place. And write
-## function 'dloop' to simulate for nreps times to calculate the probability of
-## each loop length.
-## the function 'loop_no_longer_than_n' simulate for nreps times to calculate the
-## probability that there is not a loop longer than n in an experiments.
-## We plot a bar chart of the probability of each loop length occurred, when n=50.
+## loop_occure: For a given n and a shuffling of cards to boxes. check if each  
+##              loop length from 1 to 2n occurred.
+## dloop:       For a given n, calculate the probability of each loop occurred.
+## loop_no_longer_than_n: For a given n, calculate the probability that there is 
+##              not loop longer than n.
+
+## We plot a bar chart of the probability of each loop length occurred, when
+## n=50.
 
 ################################################################
 
 Escape <- function(n, k, strategy, box2card){
   ## summary
-  ##     For given boxes with cards and prisoner's number, 
-  ##     simulate the result if the prisoner successfully escape.
+  ##     For given n, strategy, prisoner's number, and a shuffling cards to 
+  ##     boxes, simulate the result if the prisoner successfully escape.
   ## input
   ##     n: integer. half of the number of prisoners.
   ##     k: integer. prisoner's number.
@@ -97,8 +99,9 @@ Escape <- function(n, k, strategy, box2card){
 
 Pone <- function (n, k, strategy, nreps=10000){
   ## summary
-  ##     Run the 'Escape' function for nreps times, store the result and
-  ##     calculate the escape probability for the prisoner k.  
+  ##     For given n, prisoner's number, and strategy. Run the 'Escape' function
+  ##     for nreps times, store the result and calculate the escape probability 
+  ##     for the prisoner k.  
   ## input
   ##     n: integer. half of the number of prisoners.
   ##     k: integer. prisoner's number.
@@ -122,10 +125,8 @@ Pone <- function (n, k, strategy, nreps=10000){
 
 Pall <- function (n, strategy, nreps=10000){
   ## summary
-  ##    Simulate nreps times, in each simulation, we fix a random shuffling of
-  ##    cards to boxes, and run 'Escape' function for every prisoner.
-  ##    Then we determine in each simulation if all prisoners escape successfully 
-  ##    and calculate the joint probability.
+  ##    For given n and strategy, run the 'Escape' for nreps times, store the
+  ##    result and calculate the probability for all prisoners to escape.
   ## input
   ##     n: integer. half of the number of prisoners.
   ##     strategy: integer(1, 2, or 3).
@@ -152,7 +153,7 @@ Pall <- function (n, strategy, nreps=10000){
 }
 
 
-## fix n=5 or 50, held the experiments for each strategy, calculate the individual 
+## Fix n=5 or 50, held the experiments for each strategy, calculate the individual 
 ## probability for the certain and all prisoners to successfully escape.
 for (n in c(5, 50)){
   cat('when n =', n, '\n')
@@ -179,11 +180,11 @@ for (n in c(5, 50)){
 ## get card k. Thus they don't waste their chance to open n different boxes. So 
 ## the probability is around 0.5.
 ## In strategy 2, prisoner start from box k0 might get card k0 in the procedure, 
-## which will lead to a repeating loop and waste their chance. 
-## e.g. if there are 4 boxes K0, K1, K2, K3 contain 4 cards k1, k2, k3, k0 respectively
-## when we start from box K0, the route will be k0 -> k1 -> k2 -> k3 -> k0.  
-## So, the prisoner wastes all the chances in this meaningless loop.
-## So the probability is less than 0.5.
+## which will lead to a repeating loop and waste their chance. So, the 
+## probability is less than 0.5.
+## e.g. if there are 4 boxes k0, k1, k2, k3 contain 4 cards k1, k2, k3, k0 
+## respectively, when we start from box k0, the route will be
+## k0 -> k1 -> k2 -> k3 -> k0.
 
 ## 2. The joint probability for all prisoners to escape successfully under 
 ##    strategy 1 is much bigger than that of the other two.
@@ -194,23 +195,22 @@ for (n in c(5, 50)){
 ## length no bigger than n, which has a significant probability.
 
 
-loop_occure <- function(n) {
+loop_occure <- function(n, box2card) {
   ## summary 
-  ##    For a given n, record if each loop length from 1 to 2n occurred.
+  ##    For a given n and a shuffling of cards to boxes. check if each loop 
+  ##    length from 1 to 2n occurred.
   ## input
   ##       n: integer. half of the number of prisoners.
   ## output
   ##     result: vector(bool). in one experiment, if each loop length from 1 to  
-  ##             2n occurred.
+  ##             2n occurred, record it with True.
   result <- rep(F, 2*n)
-  box2card <- sample(1:(2*n), 2*n)
-  ## fix a random shuffling of cards to boxes first, then set loop length=1 
-  ## and start from box k, if we get card k in box k, just return the loop 
-  ## length and break the 'for loop', if not, plus loop length with 1, set
-  ## 'box'='card', and open box 'box' in the next loop, until we get card k.
-  ## It's obviously that we will definitely get card k after we open all the 
-  ## boxes, which is, opening boxes for 2n times. So, we simply use 'for loop',
-  ## and, we can also use 'while loop' begin with 'while True'.
+  ## set loop length=1, and start from box k, if we get card k in box k, just 
+  ## return the loop length and break the 'for loop', if not, plus loop length
+  ## with 1, set 'box'='card', and open box 'box' in the next loop, until we
+  ## get card k. It's obviously that we will definitely get card k after we open
+  ## all the boxes, which is, opening boxes for 2n times. So, we simply use
+  ## 'for loop', and, we can also use 'while loop' begin with 'while True'.
   for (k in 1:(2*n)){
     loop_length <- 1
     box <- k
@@ -229,21 +229,24 @@ loop_occure <- function(n) {
 
 dloop <- function (n, nreps=10000){
   ## summary
-  ##     simulate nreps times, in each simulation, for loop length from 1 to 2n,
-  ##     we record if the loop length occurred. Then we count the times loop 
-  ##     length = k occurred in nreps experiments, and calculate the probability.
+  ##     For a given n, calculate the probability of each loop occurred.
   ## input
   ##     n: integer. half of the number of boxes(cards)
   ##     nreps: integer(default to 10000). the number of simulation times.
   ## output
-  ##     prob: vector(float). For given 'n', the probability for loop length 
-  ##           from 1 to 2n occurred. 
-  result <- array(F, c(nreps, 2*n))     ## every row stores the result if each 
-                                        ## loop length occurred, and we have 
-                                        ## nreps rows to store each experiment.
+  ##     prob: vector(float). For given 'n', the probability for each loop  
+  ##           length from 1 to 2n occurred. 
+  result <- array(F, c(nreps, 2*n))     ## every row stands for one experiment,
+                                        ## stores the result if each loop length
+                                        ## occurred.
   for (i in 1:nreps){
-    result[i,] <- loop_occure(n) 
+    ## simulate nreps times, in each experiment, fix a random shuffling of cards 
+    ## to boxes, record if the loop length occurred.
+    box2card <- sample(1:(2*n), 2*n)
+    result[i,] <- loop_occure(n, box2card) 
   }
+  ## count the frequence of each loop length in nreps experiments, and calculate 
+  ## the probability.
   prob <- apply(result, 2, sum)/nreps
   return(prob)
 }
@@ -251,7 +254,7 @@ dloop <- function (n, nreps=10000){
 
 loop_no_longer_than_n <- function(n, nreps=10000){
   ## summary 
-  ##    for given n, calculate the probability that there is not loop longer 
+  ##    For a given n, calculate the probability that there is not loop longer 
   ##    than n.
   ## input
   ##    n: integer. half of the number of boxes(cards)
@@ -261,9 +264,11 @@ loop_no_longer_than_n <- function(n, nreps=10000){
   ##          longer than n
   count <- 0    ## to store the quantity of loops that are no longer than n
   for (i in 1:nreps){
-    ## simulate nreps times of experiments, in each experiment, if there does  
-    ## not exist the loops longer than 50, add one to 'count'.
-    result <- loop_occure(n)
+    ## simulate nreps times of experiments, in each experiment, fix a shuffling
+    ## of cards to boxes. if there does not exist the loops longer than 50, add 
+    ## one to 'count'.
+    box2card <- sample(1:(2*n), 2*n)
+    result <- loop_occure(n, box2card)
     if(sum(result[51:(2*n)])==0) count <- count + 1
   }
   ## divide count with nreps to calculate the probability.
@@ -280,9 +285,4 @@ barplot(prob, names.arg=1:(2*n), xlab='loop length', ylab='probability of occuri
 no_loop_longer_than_50 <- loop_no_longer_than_n(50)
 cat('when n = 50, the probability that there is no loop longer than 50 is', 
     no_loop_longer_than_50)
-
-
-
-
-
 
